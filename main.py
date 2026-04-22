@@ -51,13 +51,12 @@ st.title("TariffDash- A Tariff Analysis Dashboard")
 select_country = st.selectbox("Select a country's tariff to analyze", ["US", "China", "European Union", "Japan", "Canada"])
 country_code = country_codes[select_country]
 st.write(f"You selected {select_country} for analysis.")
-select_year = st.selectbox("Select a year for tariff data", ["2020", "2021", "2022"])
+select_year = st.selectbox("Select a year for tariff data", ["2016", "2017", "2018", "2019", "2020", "2021", "2022"])
 
 response = requests.get(f"https://wits.worldbank.org/API/V1/SDMX/V21/datasource/tradestats-tariff/reporter/{country_code}/year/{select_year}/partner/WLD/product/all/indicator/AHS-SMPL-AVRG?format=JSON")
 print(f"Status: {response.status_code}")
 response_body = response.json()
 print(response)
-st.write("USA Tariff Data:")
 
 tariff_stats = atr_and_top_3_tr(response_body)
 st.metric(label=f"Average Tariff Rate for {select_country}", value=f"{tariff_stats[0]}%")
@@ -66,5 +65,31 @@ top_3_tr_df = pd.DataFrame(top_3_tr_categories)
 st.write("Top 3 Tariff Rates and Categories:")
 st.dataframe(top_3_tr_df)
 
-# if __name__ == "__main__":
+#chatbot logic
+st.title("TariffBot- Statistical Prediction Chatbot")
+
+#initialize chat history
+if "messages" not in st.session_state:
+    st.session_state.messages = []
+
+#display chat messages from history on app rerun
+for message in st.session_state.messages:
+    with st.chat_message(message["role"]):
+        st.markdown(message["content"])
+
+prompt = st.chat_input("Say something")
+if prompt:
+    #display the user's message in the chat container
+    st.chat_message("user").markdown(prompt)
+    
+    #add user's message to chat history
+    st.session_state.messages.append({"role": "user", "content": prompt})
+
+    #respond the user's message (WIP)
+    bot_response = "Hello! How may I assist you today?"
+
+    #display the bot response in the chat container
+    with st.chat_message("assistant"):
+        st.markdown(bot_response)
+    st.session_state.messages.append({"role" : "assistant", "content" : bot_response})
 
