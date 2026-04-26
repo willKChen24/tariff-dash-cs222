@@ -45,6 +45,51 @@ def atr_and_top_3_tr(json_response):
 
     return atr, top_3_tr_categories
 
+
+st.title("Compare Tariff Rates Between Two Countries")
+
+country_1 = st.selectbox(
+    "Select first country",
+    ["US", "China", "European Union", "Japan", "Canada"],
+    key="country_1"
+)
+
+country_2 = st.selectbox(
+    "Select second country",
+    ["US", "China", "European Union", "Japan", "Canada"],
+    key="country_2"
+)
+
+compare_year = st.selectbox(
+    "Select comparison year",
+    ["2016", "2017", "2018", "2019", "2020", "2021", "2022"],
+    key="compare_year"
+)
+
+if st.button("Compare Tariffs"):
+    code_1 = country_codes[country_1]
+    code_2 = country_codes[country_2]
+
+    response_1 = requests.get(
+        f"https://wits.worldbank.org/API/V1/SDMX/V21/datasource/tradestats-tariff/reporter/{code_1}/year/{compare_year}/partner/WLD/product/all/indicator/AHS-SMPL-AVRG?format=JSON"
+    )
+
+    response_2 = requests.get(
+        f"https://wits.worldbank.org/API/V1/SDMX/V21/datasource/tradestats-tariff/reporter/{code_2}/year/{compare_year}/partner/WLD/product/all/indicator/AHS-SMPL-AVRG?format=JSON"
+    )
+
+    data_1 = response_1.json()
+    data_2 = response_2.json()
+
+    avg_1, top_3_1 = atr_and_top_3_tr(data_1)
+    avg_2, top_3_2 = atr_and_top_3_tr(data_2)
+
+    difference = round(abs(avg_1 - avg_2), 2)
+
+    st.metric(label=f"{country_1} Average Tariff Rate", value=f"{avg_1}%")
+    st.metric(label=f"{country_2} Average Tariff Rate", value=f"{avg_2}%")
+    st.metric(label="Difference", value=f"{difference} %")
+
 #UI contents
 
 st.title("TariffDash- A Tariff Analysis Dashboard")
